@@ -1,7 +1,7 @@
 # JoinDB
 Spin up a data warehouse in under 5 minutes!
 
-JoinDB lets you easily join across all your databases and even CSVs in minutes. No complex ETLs or integration projects required!
+JoinDB lets you easily join across all your databases and even CSVs in minutes. No complex ETLs or integration projects required.
 
 ### Setup
 1. Clone the repository onto your local machine
