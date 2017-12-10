@@ -5,9 +5,9 @@ PG_USERNAME = ENV['PG_USER']
 PG_PASSWORD = ENV['PG_PASS']
 
 # Creates a new DB based on the name parameter
-def create_db(name, username)
-    puts "createdb -U postgres -O #{username} #{name}"
-    return `createdb -U postgres -O #{username} #{name}`
+def create_db(username)
+    puts "createdb -U postgres -O #{username} #{DB_NAME}"
+    return `createdb -U postgres -O #{username} #{DB_NAME}`
 end
 
 # Adds the user who will own the database
@@ -18,12 +18,13 @@ def add_user(username, password)
     masterconn.exec("ALTER USER #{username} SUPERUSER")
 end
 
-# Adds a Postgres FDW
-def add_postgres(conn, username, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+# Adds a FDW
+def add_db(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+    conn = open_connection(DB_NAME, username, password)    
     schema_name = "#{remotedbname}_#{remoteschema}"                
-    conn.exec("CREATE EXTENSION postgres_fdw") rescue nil
+    conn.exec("CREATE EXTENSION #{fdw_type}") rescue nil
     conn.exec("CREATE SERVER #{schema_name}
-        FOREIGN DATA WRAPPER postgres_fdw
+        FOREIGN DATA WRAPPER #{fdw_type}
         OPTIONS (host '#{remotehost}', dbname '#{remotedbname}')")
     conn.exec("CREATE USER MAPPING FOR #{username}
         SERVER #{schema_name}

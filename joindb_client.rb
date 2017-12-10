@@ -1,4 +1,8 @@
 require './joindb_api'
+DB_FDW_MAPPING = {
+    :Postgres => "postgres_fdw",
+    :MySQL => "mysql_fdw"
+}
 
 # Gets the user's username and password for the Analytics DB
 def login_prompt
@@ -19,13 +23,34 @@ def setup_prompt
     add_user(username, password)
 
     # Create the database
-    create_db(DB_NAME, username)
-
-    # Open the db connection
-    conn = open_connection(DB_NAME, username, password)
+    create_db(username)
 end
 
 def add_db_prompt(username, password)
+    # Get DB type
+    puts "What type of database?"
+    counter = 1
+    # Print each of the possible types
+    possible_types = DB_FDW_MAPPING.keys
+    possible_types.each do |db_type|
+        puts "#{counter}. #{db_type}"
+        counter += 1
+    end
+    puts "#{counter}. Cancel"
+    db_type_input = gets.chomp.to_i
+
+    # Go back if they want to cancel
+    if db_type_input == counter
+        return
+    elsif db_type_input < 1 or db_type_input > counter
+        puts "That is not a valid option. Canceling."
+        return
+    end
+
+    # If all is good, get the type
+    fdw_type = DB_FDW_MAPPING[possible_types[db_type_input-1]]
+
+    # Get DB connection details
     puts "Now enter your details for the remote server:"
     puts "Username:"
     remoteuser = gets.chomp
@@ -39,8 +64,7 @@ def add_db_prompt(username, password)
     remoteschema = gets.chomp || "public"
 
     # Add it
-    conn = open_connection(DB_NAME, username, password)
-    add_postgres(conn, username, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+    add_db(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
 end
 
 def add_csv_prompt(username, password)
