@@ -43,10 +43,10 @@ def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remoteho
     conn.exec("CREATE EXTENSION #{fdw_type}") rescue nil
     conn.exec("CREATE SERVER #{schema_name}
         FOREIGN DATA WRAPPER #{fdw_type}
-        OPTIONS (host '#{remotehost}')")
+        OPTIONS (host '#{remotehost}')") rescue nil
     conn.exec("CREATE USER MAPPING FOR #{username}
         SERVER #{schema_name}
-        OPTIONS (user '#{remotehost}', password '#{remotepass}')")
+        OPTIONS (username '#{remoteuser}', password '#{remotepass}')")
     # Import the schema
     conn.exec("CREATE SCHEMA #{schema_name}")
     conn.exec("IMPORT FOREIGN SCHEMA #{schema_name}
