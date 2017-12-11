@@ -21,19 +21,23 @@ end
 # Adds a Postgres FDW
 def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
     conn = open_connection(DB_NAME, username, password)    
-    schema_name = "#{remotedbname}_#{remoteschema}"                
-    conn.transaction{|conn| conn.exec("CREATE EXTENSION #{fdw_type}")}
-    conn.transaction{|conn| conn.exec("CREATE SERVER #{schema_name}
-        FOREIGN DATA WRAPPER #{fdw_type}
-        OPTIONS (host '#{remotehost}', dbname '#{remotedbname}')")}
-    conn.exec("CREATE USER MAPPING FOR #{username}
-        SERVER #{schema_name}
-        OPTIONS (user '#{remoteuser}', password '#{remotepass}')")
-    # Import the schema
-    conn.exec("CREATE SCHEMA #{schema_name}")
-    conn.exec("IMPORT FOREIGN SCHEMA #{remoteschema}
-        FROM SERVER #{schema_name}
-        INTO #{schema_name}")
+    schema_name = "#{remotedbname}_#{remoteschema}"
+    begin
+        conn.transaction{|conn| conn.exec("CREATE EXTENSION #{fdw_type}")}
+        conn.transaction{|conn| conn.exec("CREATE SERVER #{schema_name}
+            FOREIGN DATA WRAPPER #{fdw_type}
+            OPTIONS (host '#{remotehost}', dbname '#{remotedbname}')")}
+        conn.transaction{|conn| conn.exec("CREATE USER MAPPING FOR #{username}
+            SERVER #{schema_name}
+            OPTIONS (user '#{remoteuser}', password '#{remotepass}')")}
+        # Import the schema
+        conn.transaction{|conn| conn.exec("CREATE SCHEMA #{schema_name}")}
+        conn.transaction{|conn| conn.exec("IMPORT FOREIGN SCHEMA #{remoteschema}
+            FROM SERVER #{schema_name}
+            INTO #{schema_name}")}
+    rescue StandardError
+        $stderr.print "Error: #{$!}"
+    end
 end
 
 # Adds a MySQL FDW
