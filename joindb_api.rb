@@ -1,8 +1,8 @@
 require 'pg'
 DB_NAME = "analytics_db"
 PG_DBNAME   = ENV['PG_DBNAME']
-PG_USERNAME = ENV['PG_USER']
-PG_PASSWORD = ENV['PG_PASS']
+PG_USERNAME = ENV['PG_USERNAME']
+PG_PASSWORD = ENV['PG_PASSWORD']
 
 # Creates a new DB based on the name parameter
 def create_db(username)
@@ -13,7 +13,7 @@ end
 # Adds the user who will own the database
 def add_user(username, password)
     create_user = `createuser -U postgres #{username}`
-    masterconn = PG::Connection.open(:dbname => PG_DBNAME, :user => PG_USER, :password => PG_PASSWORD)
+    masterconn = PG::Connection.open(:dbname => PG_DBNAME, :user => PG_USERNAME, :password => PG_PASSWORD)
     masterconn.exec("ALTER USER #{username} WITH password '#{password}'")
     masterconn.exec("ALTER USER #{username} SUPERUSER")
 end

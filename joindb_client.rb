@@ -18,7 +18,7 @@ def login_prompt
     return {:username => username, :password => password}
 end
 
-def setup_prompt
+def setup_prompt(username, password)
     # Create the user
     add_user(username, password)
 
@@ -95,7 +95,7 @@ while cont == true
 
     case option
     when 1
-        setup_prompt
+        setup_prompt(login_username, login_password)
     when 2
         add_db_prompt(login_username, login_password)
     when 3
