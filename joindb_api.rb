@@ -22,10 +22,10 @@ end
 def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
     conn = open_connection(DB_NAME, username, password)    
     schema_name = "#{remotedbname}_#{remoteschema}"                
-    conn.exec("CREATE EXTENSION #{fdw_type}") rescue nil
-    conn.exec("CREATE SERVER #{schema_name}
+    conn.transaction{|conn| conn.exec("CREATE EXTENSION #{fdw_type}")}
+    conn.transaction{|conn| conn.exec("CREATE SERVER #{schema_name}
         FOREIGN DATA WRAPPER #{fdw_type}
-        OPTIONS (host '#{remotehost}', dbname '#{remotedbname}')")
+        OPTIONS (host '#{remotehost}', dbname '#{remotedbname}')")}
     conn.exec("CREATE USER MAPPING FOR #{username}
         SERVER #{schema_name}
         OPTIONS (user '#{remoteuser}', password '#{remotepass}')")
@@ -40,18 +40,22 @@ end
 def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname)
     conn = open_connection(DB_NAME, username, password)
     schema_name = "#{remotedbname}"
-    conn.exec("CREATE EXTENSION #{fdw_type}") rescue nil
-    conn.exec("CREATE SERVER #{schema_name}
-        FOREIGN DATA WRAPPER #{fdw_type}
-        OPTIONS (host '#{remotehost}')") rescue nil
-    conn.exec("CREATE USER MAPPING FOR #{username}
-        SERVER #{schema_name}
-        OPTIONS (username '#{remoteuser}', password '#{remotepass}')")
-    # Import the schema
-    conn.exec("CREATE SCHEMA #{schema_name}")
-    conn.exec("IMPORT FOREIGN SCHEMA #{schema_name}
-        FROM SERVER #{schema_name}
-        INTO #{schema_name}")
+    begin
+        conn.exec("CREATE EXTENSION #{fdw_type}")
+        conn.transaction{|conn| conn.exec("CREATE SERVER #{schema_name}
+            FOREIGN DATA WRAPPER #{fdw_type}
+            OPTIONS (host '#{remotehost}')")}
+        conn.transaction{|conn| conn.exec ("CREATE USER MAPPING FOR #{username}
+            SERVER #{schema_name}
+            OPTIONS (username '#{remoteuser}', password '#{remotepass}')")}
+        # Import the schema
+        conn.transaction{|conn| conn.exec("CREATE SCHEMA #{schema_name}")}
+        conn.transaction{|conn| conn.exec("IMPORT FOREIGN SCHEMA #{schema_name}
+            FROM SERVER #{schema_name}
+            INTO #{schema_name}")}
+    rescue StandardError
+        $stderr.print "Error: #{$!}"
+    end
 end
 
 # Adds a CSV FDW
