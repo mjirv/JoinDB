@@ -64,7 +64,12 @@ def add_db_prompt(username, password)
     remoteschema = gets.chomp || "public"
 
     # Add it
-    add_db(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+    case fdw_type
+    when DB_FDW_MAPPING[:Postgres]
+        add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+    when DB_FDW_MAPPING[:MySQL]
+        add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname)
+    end
 end
 
 def add_csv_prompt(username, password)

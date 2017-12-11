@@ -18,8 +18,8 @@ def add_user(username, password)
     masterconn.exec("ALTER USER #{username} SUPERUSER")
 end
 
-# Adds a FDW
-def add_db(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+# Adds a Postgres FDW
+def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
     conn = open_connection(DB_NAME, username, password)    
     schema_name = "#{remotedbname}_#{remoteschema}"                
     conn.exec("CREATE EXTENSION #{fdw_type}") rescue nil
@@ -37,7 +37,21 @@ def add_db(fdw_type, username, password, remoteuser, remotepass, remotehost, rem
 end
 
 # Adds a MySQL FDW
-def add_mysql(conn)
+def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname)
+    conn = open_connection(DB_NAME, username, password)
+    schema_name = "#{remotedbname}"
+    conn.exec("CREATE EXTENSION #{fdw_type}") rescue nil
+    conn.exec("CREATE SERVER #{schema_name}
+        FOREIGN DATA WRAPPER #{fdw_type}
+        OPTIONS (host '#{remotehost}')")
+    conn.exec("CREATE USER MAPPING FOR #{username}
+        SERVER #{schema_name}
+        OPTIONS (user '#{remotehost}', password '#{remotepass}')")
+    # Import the schema
+    conn.exec("CREATE SCHEMA #{schema_name}")
+    conn.exec("IMPORT FOREIGN SCHEMA #{schema_name}
+        FROM SERVER #{schema_name}
+        INTO #{schema_name}")
 end
 
 # Adds a CSV FDW
