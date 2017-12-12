@@ -1,4 +1,6 @@
 require './joindb_api'
+require 'io/console'
+
 DB_FDW_MAPPING = {
     :Postgres => "postgres_fdw",
     :MySQL => "mysql_fdw"
@@ -13,7 +15,8 @@ def login_prompt
     
     # What password?
     print "Password: "
-    password = gets.chomp
+    password = STDIN.noecho(&:gets).chomp
+    puts
 
     #TODO: Add some validation
     return {:username => username, :password => password}
@@ -56,7 +59,8 @@ def add_db_prompt(username, password)
     print "Username: "
     remoteuser = gets.chomp
     print "Password: "
-    remotepass = gets.chomp
+    remotepass = STDIN.noecho(&:gets).chomp
+    puts
     print "Host: "
     remotehost = gets.chomp
     print "Port: "
@@ -85,6 +89,26 @@ def add_csv_prompt(username, password)
     add_csv(files, username, password)
 end
 
+def show_details_prompt(username, password)
+    puts "~~~ Server Details ~~~"
+    puts "Hostname: localhost"
+    puts "Port: 5432"
+    puts "Connect via `psql -U #{username}`"
+    puts
+    puts "~~~ Connection Details ~~~"
+    puts "Schemas:"
+    get_schemas(username, password).each{|res| puts res}
+    puts
+    puts "Foreign servers:"
+    get_foreign_servers(username, password).each{|res| puts res}
+    puts
+    puts "Local tables:"
+    get_local_tables(username, password).each{|res| puts res}
+    puts
+    puts "Foreign tables:"
+    get_foreign_tables(username, password).each{|res| puts res}
+end
+
 cont = true
 puts "Welcome to JoinDB!"
 
@@ -95,13 +119,14 @@ login_password = login[:password]
 
 # Main loop; continue until user wants to exit
 while cont == true
-    puts ""
+    puts
     puts "What would you like to do?"
     puts "1. Setup"
     puts "2. Add DB"
     puts "3. Add CSV"
-    puts "4. Exit"
-    option = gets.chomp.to_i
+    puts "4. Show JoinDB details"
+    puts "5. Exit"
+    option = gets.chomp.to_i rescue "nopenopenope"
     puts ""
 
     case option
@@ -112,6 +137,8 @@ while cont == true
     when 3
         add_csv_prompt(login_username, login_password)
     when 4
+        show_details_prompt(login_username, login_password)
+    when 5
         cont = false
     else
         puts "That option is not recognized."

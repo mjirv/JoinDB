@@ -96,3 +96,34 @@ def open_connection(db_name, username, password, port=5432)
     conn = PG::Connection.open(:dbname => db_name, :user => username, :password => password)
 end
 
+def get_schemas(username, password)
+    conn = open_connection(DB_NAME, username, password)
+
+    # Show the schemas
+    conn.send_query("SELECT schema_name FROM information_schema.schemata")
+    conn.get_result
+end
+
+def get_foreign_servers(username, password)
+    conn = open_connection(DB_NAME, username, password)
+
+    # Show the servers
+    conn.send_query("SELECT srvname, srvoptions FROM pg_foreign_server")
+    conn.get_result
+end
+
+def get_local_tables(username, password)
+    conn = open_connection(DB_NAME, username, password)
+
+    # Show the tables
+    conn.send_query("SELECT schemaname, tablename FROM pg_tables WHERE schemaname not in ('pg_catalog', 'information_schema') ORDER BY schemaname desc;")
+    conn.get_result
+end
+
+def get_foreign_tables(username, password)
+    conn = open_connection(DB_NAME, username, password)
+
+    # Show the tables
+    conn.send_query("SELECT ftoptions FROM pg_foreign_table")
+    conn.get_result
+end
