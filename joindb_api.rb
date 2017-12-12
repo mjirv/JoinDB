@@ -45,7 +45,7 @@ def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remoteho
     conn = open_connection(DB_NAME, username, password)
     schema_name = "#{remotedbname}"
     begin
-        conn.exec("CREATE EXTENSION #{fdw_type}")
+        conn.transaction{|conn| conn.exec("CREATE EXTENSION #{fdw_type}")}
         conn.transaction{|conn| conn.exec("CREATE SERVER #{schema_name}
             FOREIGN DATA WRAPPER #{fdw_type}
             OPTIONS (host '#{remotehost}', port '#{remoteport}')")}

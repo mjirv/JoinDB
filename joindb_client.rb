@@ -7,11 +7,12 @@ DB_FDW_MAPPING = {
 # Gets the user's username and password for the Analytics DB
 def login_prompt
     # Get user input. What username do they want?
-    puts "What username do you want to use on the Analytics DB?"
+    puts "Please log in to your JoinDB. If this is your first time, we will create an account with the following credentials:"
+    print "Username: "
     username = gets.chomp
     
     # What password?
-    puts "What password?"
+    print "Password: "
     password = gets.chomp
 
     #TODO: Add some validation
@@ -52,23 +53,28 @@ def add_db_prompt(username, password)
 
     # Get DB connection details
     puts "Now enter your details for the remote server:"
-    puts "Username:"
+    print "Username: "
     remoteuser = gets.chomp
-    puts "Password:"
+    print "Password: "
     remotepass = gets.chomp
-    puts "Host:"
+    print "Host: "
     remotehost = gets.chomp
-    puts "DB Name:"
+    print "Port: "
+    remoteport = gets.chomp
+    if remoteport.length == 0
+        remoteport = nil
+    end
+    print "DB Name: "
     remotedbname = gets.chomp || "postgres"
-    puts "Schema:"
+    print "Schema: "
     remoteschema = gets.chomp || "public"
 
     # Add it
     case fdw_type
     when DB_FDW_MAPPING[:Postgres]
-        add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+        add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport)
     when DB_FDW_MAPPING[:MySQL]
-        add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname)
+        add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport)
     end
 end
 
