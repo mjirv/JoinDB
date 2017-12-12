@@ -19,14 +19,14 @@ def add_user(username, password)
 end
 
 # Adds a Postgres FDW
-def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport=5432)
     conn = open_connection(DB_NAME, username, password)    
     schema_name = "#{remotedbname}_#{remoteschema}"
     begin
         conn.transaction{|conn| conn.exec("CREATE EXTENSION #{fdw_type}")}
         conn.transaction{|conn| conn.exec("CREATE SERVER #{schema_name}
             FOREIGN DATA WRAPPER #{fdw_type}
-            OPTIONS (host '#{remotehost}', dbname '#{remotedbname}')")}
+            OPTIONS (host '#{remotehost}', dbname '#{remotedbname}', port '#{remoteport}')")}
         conn.transaction{|conn| conn.exec("CREATE USER MAPPING FOR #{username}
             SERVER #{schema_name}
             OPTIONS (user '#{remoteuser}', password '#{remotepass}')")}
@@ -41,14 +41,14 @@ def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remot
 end
 
 # Adds a MySQL FDW
-def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname)
+def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport=3306)
     conn = open_connection(DB_NAME, username, password)
     schema_name = "#{remotedbname}"
     begin
         conn.exec("CREATE EXTENSION #{fdw_type}")
         conn.transaction{|conn| conn.exec("CREATE SERVER #{schema_name}
             FOREIGN DATA WRAPPER #{fdw_type}
-            OPTIONS (host '#{remotehost}')")}
+            OPTIONS (host '#{remotehost}', port '#{remoteport}')")}
         conn.transaction{|conn| conn.exec ("CREATE USER MAPPING FOR #{username}
             SERVER #{schema_name}
             OPTIONS (username '#{remoteuser}', password '#{remotepass}')")}
@@ -67,7 +67,7 @@ def add_csv(files, username, password)
     files.each do |file|
         puts ""
         puts "Importing #{file}"
-        puts `pgfutter_windows_386.exe --user #{username} --pw #{password} --db #{DB_NAME} --ignore-errors csv #{file}`
+        puts `pgfutter --user #{username} --pw #{password} --db #{DB_NAME} --ignore-errors csv #{file}`
     end
 end
 
@@ -80,7 +80,7 @@ def add_generic(conn)
 end
 
 # Open the db connection
-def open_connection(db_name, username, password)
+def open_connection(db_name, username, password, port=5432)
     conn = PG::Connection.open(:dbname => db_name, :user => username, :password => password)
 end
 
