@@ -1,4 +1,6 @@
 require './joindb_api'
+require 'io/console'
+
 DB_FDW_MAPPING = {
     :Postgres => "postgres_fdw",
     :MySQL => "mysql_fdw"
@@ -7,12 +9,14 @@ DB_FDW_MAPPING = {
 # Gets the user's username and password for the Analytics DB
 def login_prompt
     # Get user input. What username do they want?
-    puts "What username do you want to use on the Analytics DB?"
+    puts "Please log in to your JoinDB. If this is your first time, we will create an account with the following credentials:"
+    print "Username: "
     username = gets.chomp
     
     # What password?
-    puts "What password?"
-    password = gets.chomp
+    print "Password: "
+    password = STDIN.noecho(&:gets).chomp
+    puts
 
     #TODO: Add some validation
     return {:username => username, :password => password}
@@ -52,23 +56,29 @@ def add_db_prompt(username, password)
 
     # Get DB connection details
     puts "Now enter your details for the remote server:"
-    puts "Username:"
+    print "Username: "
     remoteuser = gets.chomp
-    puts "Password:"
-    remotepass = gets.chomp
-    puts "Host:"
+    print "Password: "
+    remotepass = STDIN.noecho(&:gets).chomp
+    puts
+    print "Host: "
     remotehost = gets.chomp
-    puts "DB Name:"
+    print "Port: "
+    remoteport = gets.chomp
+    if remoteport.length == 0
+        remoteport = nil
+    end
+    print "DB Name: "
     remotedbname = gets.chomp || "postgres"
-    puts "Schema:"
+    print "Schema: "
     remoteschema = gets.chomp || "public"
 
     # Add it
     case fdw_type
     when DB_FDW_MAPPING[:Postgres]
-        add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema)
+        add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport)
     when DB_FDW_MAPPING[:MySQL]
-        add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname)
+        add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport)
     end
 end
 
@@ -77,6 +87,26 @@ def add_csv_prompt(username, password)
     puts "(multiple files separated by commas):"
     files = gets.chomp.split(",")
     add_csv(files, username, password)
+end
+
+def show_details_prompt(username, password)
+    puts "~~~ Server Details ~~~"
+    puts "Hostname: localhost"
+    puts "Port: 5432"
+    puts "Connect via `psql -U #{username}`"
+    puts
+    puts "~~~ Connection Details ~~~"
+    puts "Schemas:"
+    get_schemas(username, password).each{|res| puts res}
+    puts
+    puts "Foreign servers:"
+    get_foreign_servers(username, password).each{|res| puts res}
+    puts
+    puts "Local tables:"
+    get_local_tables(username, password).each{|res| puts res}
+    puts
+    puts "Foreign tables:"
+    get_foreign_tables(username, password).each{|res| puts res}
 end
 
 cont = true
@@ -89,13 +119,14 @@ login_password = login[:password]
 
 # Main loop; continue until user wants to exit
 while cont == true
-    puts ""
+    puts
     puts "What would you like to do?"
     puts "1. Setup"
     puts "2. Add DB"
     puts "3. Add CSV"
-    puts "4. Exit"
-    option = gets.chomp.to_i
+    puts "4. Show JoinDB details"
+    puts "5. Exit"
+    option = gets.chomp.to_i rescue "nopenopenope"
     puts ""
 
     case option
@@ -106,6 +137,8 @@ while cont == true
     when 3
         add_csv_prompt(login_username, login_password)
     when 4
+        show_details_prompt(login_username, login_password)
+    when 5
         cont = false
     else
         puts "That option is not recognized."
