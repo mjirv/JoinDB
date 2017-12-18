@@ -1,12 +1,12 @@
 require 'pg'
-DB_NAME = "analytics_db"
-PG_DBNAME   = "joiner"
-PG_USERNAME = "joiner"
+DB_NAME = "joiner"
+PG_USERNAME = "docker"
 PG_PASSWORD = "docker"
+DB_HOST = "localhost"
 
 # Adds the user who will own the database
 def add_user(username, password, dbuser = PG_USERNAME, dbpass = PG_PASSWORD)
-    masterconn = PG::Connection.open(:dbname => PG_DBNAME, :user => dbuser,
+    masterconn = PG::Connection.open(:host => DB_HOST, :dbname => DB_NAME, :user => dbuser,
       :password => dbpass, :port => get_port())
     # Only make a superuser if this is the first user being created
     if dbuser == PG_USERNAME
@@ -14,13 +14,27 @@ def add_user(username, password, dbuser = PG_USERNAME, dbpass = PG_PASSWORD)
     else
         masterconn.exec("CREATE USER #{username}")
     end
-    masterconn.exec("ALTER USER #{username} WITH password '#{password}'")
+    res = masterconn.exec("ALTER USER #{username} WITH password '#{password}'")
     
-    #TODO: If successful, delete the joiner user for security
+    #If successful, delete the docker user login for security
+    if res
+        masterconn.exec("ALTER USER #{PG_USERNAME} WITH NOLOGIN")
+    else
+        puts "User creation unsuccessful."
+    end
+end
+
+# If we're connecting to a server on the host, we want to give it the host IP
+def dockerize_localhost(remotehost)
+    if remotehost == "localhost" or remotehost == "127.0.0.1"
+        remotehost = `ifconfig | grep "docker0" -A 1 | grep "inet" | cut -d ":" -f 2 | cut -d " " -f 1`
+    end
+    return remotehost
 end
 
 # Adds a Postgres FDW
 def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport=5432)
+    remotehost = dockerize_localhost(remotehost)
     conn = open_connection(DB_NAME, username, password)    
     schema_name = "#{remotedbname}_#{remoteschema}"
     begin
@@ -28,17 +42,17 @@ def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remot
             conn.send_query("CREATE EXTENSION IF NOT EXISTS #{fdw_type}") 
         end
 
-        conn.transaction do |conn| 
-            conn.exec("CREATE SERVER #{schema_name}
+        conn.transaction do |c| 
+            c.exec("CREATE SERVER #{schema_name}
                 FOREIGN DATA WRAPPER #{fdw_type}
                 OPTIONS (host '#{remotehost}', dbname '#{remotedbname}', port '#{remoteport}')")
-            conn.exec("CREATE USER MAPPING FOR #{username}
+            c.exec("CREATE USER MAPPING FOR #{username}
                 SERVER #{schema_name}
                 OPTIONS (user '#{remoteuser}', password '#{remotepass}')")
             
             # Import the schema
-            conn.exec("CREATE SCHEMA #{schema_name}")
-            conn.exec("IMPORT FOREIGN SCHEMA #{remoteschema}
+            c.exec("CREATE SCHEMA #{schema_name}")
+            c.exec("IMPORT FOREIGN SCHEMA #{remoteschema}
                 FROM SERVER #{schema_name}
                 INTO #{schema_name}")
         end
@@ -49,6 +63,7 @@ end
 
 # Adds a MySQL FDW
 def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport=3306)
+    remotehost = dockerize_localhost(remotehost)
     conn = open_connection(DB_NAME, username, password)
     schema_name = "#{remotedbname}"
     begin
@@ -96,7 +111,7 @@ end
 
 # Open the db connection
 def open_connection(db_name, username, password)
-    return PG::Connection.open(:dbname => db_name, :user => username,
+    return PG::Connection.open(:host => DB_HOST, :dbname => db_name, :user => username,
       :password => password, :port => get_port())
 end
 
