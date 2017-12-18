@@ -3,6 +3,8 @@ DB_NAME = "joiner"
 PG_USERNAME = "docker"
 PG_PASSWORD = "docker"
 DB_HOST = "localhost"
+CONTAINER_NAME = "joiner"
+FILE_DIRECTORY = "/var/lib/postgresql/file_copy"
 
 # Adds the user who will own the database
 def add_user(username, password, dbuser = PG_USERNAME, dbpass = PG_PASSWORD)
@@ -94,10 +96,14 @@ end
 def add_csv(files, username, password)
     port = get_port()
     files.each do |file|
+        file = file.gsub("\n","")
         puts ""
         puts "Importing #{file}"
-        puts `pgfutter --user #{username} --pw #{password} --db #{DB_NAME}\
-          --port #{port()} --ignore-errors csv #{file}`
+        # Copy it to the server
+        `docker cp #{file} #{CONTAINER_NAME}:#{FILE_DIRECTORY}`
+        
+        # Run pgfutter on the server
+        puts `docker exec -it #{CONTAINER_NAME} ./pgfutter --user #{username} --pw #{password} --db #{DB_NAME} --ignore-errors csv #{FILE_DIRECTORY}/#{File.basename(file)}`
     end
 end
 

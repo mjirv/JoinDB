@@ -1,4 +1,4 @@
-require './joindb_api'
+require_relative 'joindb_api'
 require 'io/console'
 
 DB_FDW_MAPPING = {
