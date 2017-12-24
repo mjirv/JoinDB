@@ -7,7 +7,7 @@ DB_FDW_MAPPING = {
 }
 
 # Gets the user's username and password for the Analytics DB
-def login_prompt
+def login_prompt(register=false)
     # Get user input. What username do they want?
     print "Username: "
     username = gets.chomp
@@ -19,11 +19,14 @@ def login_prompt
         print "Password: "
         password = STDIN.noecho(&:gets).chomp
         puts
-        
-        print "Verify password: "
-        verify = STDIN.noecho(&:gets).chomp
-        puts
-        puts "Passwords do not match." if verify != password
+        if register
+            print "Verify password: "
+            verify = STDIN.noecho(&:gets).chomp
+            puts
+            puts "Passwords do not match." if verify != password
+        else
+            verify = password
+        end
         puts "Password cannot be blank." if password == ""
     end
 
