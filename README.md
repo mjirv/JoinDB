@@ -13,8 +13,9 @@ Joiner lets you easily join across all your databases and even CSVs in minutes. 
 4. Run the docker image with `docker run -P --name joiner mjirv/joiner:prototype`
 5. If you want to allow connections from other computers, note the port it's running on (using `docker ps`) and make sure it's open
 #### Connect to it
-6. Run `ruby joindb_client.rb` and follow the prompts on the screen to set up your analytics database and add connections to it.
-7. Query via your favorite PostgreSQL client like any other database!
+6. Run `ruby install.rb` to create your login and see connection details
+7. Run `ruby joindb_client.rb` and follow the prompts on the screen to set up your analytics database and add connections to it
+8. Query via your favorite PostgreSQL client like any other database!
 
 ### Notes
 - Joiner currently only supports PostgreSQL and MySQL connections plus CSV imports. I'm adding more soon!
