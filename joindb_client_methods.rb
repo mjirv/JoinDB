@@ -29,7 +29,7 @@ def login_prompt(register=false)
         end
         puts "Password cannot be blank." if password == ""
     end
-    open_connection(DB_NAME, username, password)
+    open_connection(DB_NAME, username, password) if not register
 
     return {:username => username, :password => password}
 end
