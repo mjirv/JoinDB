@@ -1,5 +1,5 @@
-require './joindb_api'
-require './joindb_client_methods'
+require_relative 'joindb_api'
+require_relative 'joindb_client_methods'
 require 'io/console'
 
 puts "Welcome to Joiner!"
