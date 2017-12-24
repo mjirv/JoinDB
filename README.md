@@ -9,7 +9,7 @@ Joiner lets you easily join across all your databases and even CSVs in minutes. 
 1. Clone the repository onto your local machine
 2. Joiner requires Ruby and Docker. You will need to download those if you don't have them already.
 #### Start the server
-3. After downloading Docker, pull the Docker image with `docker pull mjirv/joiner`
+3. After downloading Docker, pull the Docker image with `docker pull mjirv/joiner:prototype`
 4. Run the docker image with `docker run -P --name joiner mjirv/joiner`
 5. If you want to allow connections from other computers, note the port it's running on (using `docker ps`) and make sure it's open
 #### Connect to it
