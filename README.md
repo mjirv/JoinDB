@@ -3,6 +3,8 @@ Spin up a data warehouse in under 5 minutes!
 
 Joiner lets you easily join across all your databases and even CSVs in minutes. No complex ETLs or integration projects required.
 
+![Screenshot of command line client](https://i.imgur.com/HyaJ6VG.png)
+
 ### Setup
 1. Clone the repository onto your local machine
 2. Joiner requires Ruby and Docker. You will need to download those if you don't have them already.
