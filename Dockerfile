@@ -46,6 +46,14 @@ RUN /usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x
 # Note: The official Debian and Ubuntu images automatically ``apt-get clean``
 # after each ``apt-get``
 
+# Add the odbc_fdw
+RUN git clone https://github.com/CartoDB/odbc_fdw.git
+RUN cd odbc_fdw &&\
+    sed -i "s/create_foreignscan_path(root, baserel, baserel->rows/create_foreignscan_path(root, baserel, NULL, baserel->rows/g" odbc_fdw.c &&\
+    make &&\
+    make install
+RUN cd ..
+
 # Add the mysql_fdw
 RUN export PATH=/usr/lib/postgresql/9.6/bin/:$PATH
 RUN export PATH=/usr/lib/mysql-client/bin/:$PATH
