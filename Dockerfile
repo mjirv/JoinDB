@@ -30,15 +30,16 @@ RUN apt-get install -y tdsodbc
 # Postgres
 RUN apt-get install odbc-postgresql
 # MySQL
-RUN  wget -c https://dev.mysql.com/get/Downloads/Connector-ODBC/5.3/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar.gz &&\
-    gunzip mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar.gz &&\
-    tar -xf  mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar.gz -C /usr/lib/mysql-connector-odbc/
+RUN mkdir /usr/lib/mysql-connector-odbc/
+RUN  wget -c https://dev.mysql.com/get/Downloads/Connector-ODBC/5.3/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar.gz
+RUN gunzip mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar.gz
+RUN tar -xf  mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar -C /usr/lib/mysql-connector-odbc/
 
 # Install the drivers
 # MySQL
-RUN /usr/lib/mysql-connector-odbc/bin/myodbc-installer -d -a -n "MySQL" -t "DRIVER=/usr/lib/mysql-connector-odbc/bin/lib/libmyodbc5w.so"
+RUN /usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit/bin/myodbc-installer -d -a -n "MySQL" -t "DRIVER=/usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit/lib/libmyodbc5w.so"
 # Postgres
-RUN /usr/lib/mysql-connector-odbc/bin/myodbc-installer -d -a -n "PostgreSQL" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/psqlodbcw.so"
+RUN /usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit/bin/myodbc-installer -d -a -n "PostgreSQL" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/psqlodbcw.so"
 
 # Note: The official Debian and Ubuntu images automatically ``apt-get clean``
 # after each ``apt-get``
