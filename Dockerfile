@@ -39,6 +39,8 @@ RUN  wget -c https://dev.mysql.com/get/Downloads/Connector-ODBC/5.3/mysql-connec
 RUN /usr/lib/mysql-connector-odbc/bin/myodbc-installer -d -a -n "MySQL" -t "DRIVER=/usr/lib/mysql-connector-odbc/bin/lib/libmyodbc5w.so"
 # Postgres
 RUN /usr/lib/mysql-connector-odbc/bin/myodbc-installer -d -a -n "PostgreSQL" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/psqlodbcw.so"
+# SQL Server
+RUN /usr/lib/mysql-connector-odbc/bin/myodbc-installer -d -a -n "SQL Server" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/libtdsodbc.so"
 
 # Note: The official Debian and Ubuntu images automatically ``apt-get clean``
 # after each ``apt-get``
