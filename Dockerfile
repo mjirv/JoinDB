@@ -23,6 +23,15 @@ RUN apt-get install -y libmysqlclient-dev
 RUN apt-get install -y wget
 RUN apt-get install -y net-tools
 
+# Install ODBC drivers
+RUN apt-get install -y unixodbc-dev
+# SQL Server
+RUN apt-get install -y tdsodbc
+# Postgres
+RUN apt-get install odbc-postgresql
+# MySQL
+RUN apt-get install odbc-libmyodbc
+
 # Note: The official Debian and Ubuntu images automatically ``apt-get clean``
 # after each ``apt-get``
 
