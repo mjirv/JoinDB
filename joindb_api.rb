@@ -35,7 +35,7 @@ def dockerize_localhost(remotehost)
 end
 
 # Adds a Postgres FDW
-def add_fdw_postgres(username, password='', remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport=5432)
+def add_fdw_postgres(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport=5432)
     remotehost = dockerize_localhost(remotehost)
     conn = open_connection(DB_NAME, username, password)    
     schema_name = "#{remotedbname}_#{remoteschema}"
@@ -43,7 +43,7 @@ def add_fdw_postgres(username, password='', remoteuser, remotepass, remotehost, 
         conn.transaction do |c| 
             # Create the server
             c.exec("CREATE SERVER #{schema_name}
-                FOREIGN DATA WRAPPER #{fdw_type}
+                FOREIGN DATA WRAPPER odbc_fdw
                 OPTIONS (
                     odbc_DRIVER 'PostgreSQL',
                     odbc_SERVERNAME '#{remotehost}',
@@ -73,7 +73,7 @@ def add_fdw_postgres(username, password='', remoteuser, remotepass, remotehost, 
 end
 
 # Adds a MySQL FDW
-def add_fdw_mysql(username, password='', remoteuser, remotepass, remotehost, remotedbname, remoteport=3306)
+def add_fdw_mysql(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport=3306)
     remotehost = dockerize_localhost(remotehost)
     conn = open_connection(DB_NAME, username, password)
     schema_name = "#{remotedbname}"
@@ -81,10 +81,11 @@ def add_fdw_mysql(username, password='', remoteuser, remotepass, remotehost, rem
         conn.transaction do |conn| 
             # Create the server
             conn.exec("CREATE SERVER #{schema_name}
-                FOREIGN DATA WRAPPER #{fdw_type}
+                FOREIGN DATA WRAPPER odbc_fdw
                 OPTIONS (
+                    odbc_DRIVER 'MySQL',
                     odbc_SERVER '#{remotehost}', 
-                    pdbc_PORT '#{remoteport}'
+                    odbc_PORT '#{remoteport}'
                 )")
             
             # Create the user mapping

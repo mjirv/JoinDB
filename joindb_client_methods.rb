@@ -63,7 +63,7 @@ def add_db_prompt(username, password)
     print "Username: "
     remoteuser = gets.chomp
     print "Password: "
-    remotepass = STDIN.noecho(&:gets).chomp
+    remotepass = STDIN.noecho(&:gets).chomp || ""
     puts
     print "Host: "
     remotehost = gets.chomp
