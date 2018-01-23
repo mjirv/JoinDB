@@ -76,7 +76,7 @@ USER postgres
 RUN    /etc/init.d/postgresql start &&\
     psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
     createdb -O docker joiner &&\
-    psql -d joiner --command "CREATE EXTENSION postgres_fdw; CREATE EXTENSION mysql_fdw;"
+    psql -d joiner --command "CREATE EXTENSION odbc_fdw"
 
 # Adjust PostgreSQL configuration so that remote connections to the
 # database are possible.
