@@ -1,5 +1,6 @@
 module JoindbApiMethods
     require 'pg'
+    
     DB_NAME = "joiner"
     PG_USERNAME = "docker"
     PG_PASSWORD = "docker"
