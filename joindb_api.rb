@@ -72,8 +72,8 @@ def add_fdw_postgres(username, password, remoteuser, remotepass, remotehost, rem
     end
 end
 
-# Adds a MySQL FDW
-def add_fdw_mysql(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport=3306)
+# Adds a MySQL FDW or a SQL Server FDW depending on whether drivertype is "MySQL" or "SQL Server"
+def add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport=3306, driver_type)
     remotehost = dockerize_localhost(remotehost)
     conn = open_connection(DB_NAME, username, password)
     schema_name = "#{remotedbname}"
@@ -83,7 +83,7 @@ def add_fdw_mysql(username, password, remoteuser, remotepass, remotehost, remote
             conn.exec("CREATE SERVER #{schema_name}
                 FOREIGN DATA WRAPPER odbc_fdw
                 OPTIONS (
-                    odbc_DRIVER 'MySQL',
+                    odbc_DRIVER '#{driver_type}',
                     odbc_SERVER '#{remotehost}', 
                     odbc_PORT '#{remoteport}'
                 )")
