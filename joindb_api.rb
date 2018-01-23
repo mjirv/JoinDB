@@ -35,28 +35,37 @@ def dockerize_localhost(remotehost)
 end
 
 # Adds a Postgres FDW
-def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport=5432)
+def add_fdw_postgres(username, password='', remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport=5432)
     remotehost = dockerize_localhost(remotehost)
     conn = open_connection(DB_NAME, username, password)    
     schema_name = "#{remotedbname}_#{remoteschema}"
     begin
-        conn.transaction do |conn|
-            conn.send_query("CREATE EXTENSION IF NOT EXISTS #{fdw_type}") 
-        end
-
         conn.transaction do |c| 
+            # Create the server
             c.exec("CREATE SERVER #{schema_name}
                 FOREIGN DATA WRAPPER #{fdw_type}
-                OPTIONS (host '#{remotehost}', dbname '#{remotedbname}', port '#{remoteport}')")
+                OPTIONS (
+                    odbc_DRIVER 'PostgreSQL',
+                    odbc_SERVERNAME '#{remotehost}',
+                    odbc_PORT '#{remoteport}'
+                )")
+            
+            # Create the user mapping
             c.exec("CREATE USER MAPPING FOR #{username}
                 SERVER #{schema_name}
-                OPTIONS (user '#{remoteuser}', password '#{remotepass}')")
+                OPTIONS (
+                    odbc_USERNAME '#{remoteuser}',
+                    odbc_PASSWORD '#{remotepass}'
+                )")
             
             # Import the schema
             c.exec("CREATE SCHEMA #{schema_name}")
             c.exec("IMPORT FOREIGN SCHEMA #{remoteschema}
                 FROM SERVER #{schema_name}
-                INTO #{schema_name}")
+                INTO #{schema_name}
+                OPTIONS (
+                    odbc_DATABASE '#{remotedbname}'
+                )")
         end
     rescue StandardError
         $stderr.print "Error: #{$!}"
@@ -64,28 +73,36 @@ def add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remot
 end
 
 # Adds a MySQL FDW
-def add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport=3306)
+def add_fdw_mysql(username, password='', remoteuser, remotepass, remotehost, remotedbname, remoteport=3306)
     remotehost = dockerize_localhost(remotehost)
     conn = open_connection(DB_NAME, username, password)
     schema_name = "#{remotedbname}"
     begin
         conn.transaction do |conn| 
-            conn.exec("CREATE EXTENSION IF NOT EXISTS #{fdw_type}")
-            conn.get_result
-        end
-
-        conn.transaction do |conn| 
+            # Create the server
             conn.exec("CREATE SERVER #{schema_name}
                 FOREIGN DATA WRAPPER #{fdw_type}
-                OPTIONS (host '#{remotehost}', port '#{remoteport}')")
+                OPTIONS (
+                    odbc_SERVER '#{remotehost}', 
+                    pdbc_PORT '#{remoteport}'
+                )")
+            
+            # Create the user mapping
             conn.exec("CREATE USER MAPPING FOR #{username}
                 SERVER #{schema_name}
-                OPTIONS (username '#{remoteuser}', password '#{remotepass}')")
+                OPTIONS (
+                    odbc_UID '#{remoteuser}',
+                    odbc_PWD '#{remotepass}'
+                )")
+            
             # Import the schema
             conn.exec("CREATE SCHEMA #{schema_name}")
             conn.exec("IMPORT FOREIGN SCHEMA #{schema_name}
                 FROM SERVER #{schema_name}
-                INTO #{schema_name}")
+                INTO #{schema_name}
+                OPTIONS (
+                    odbc_DATABASE '#{schema_name}'
+                )")
         end
     rescue StandardError
         $stderr.print "Error: #{$!}"
