@@ -1,4 +1,4 @@
-require_relative 'joindb_api'
+require_relative 'joindb_api_methods'
 require 'io/console'
 
 DB_FDW_MAPPING = {
@@ -6,6 +6,10 @@ DB_FDW_MAPPING = {
     :MySQL => "mysql_fdw",
     :SQLServer => "sql_server_fdw"
 }
+
+Class JoinDBApi
+    extend JoindbApiMethods
+end
 
 # Gets the user's username and password for the Analytics DB
 def login_prompt(register=false)
@@ -30,7 +34,7 @@ def login_prompt(register=false)
         end
         puts "Password cannot be blank." if password == ""
     end
-    open_connection(DB_NAME, username, password) if not register
+    JoinDbApi.open_connection(DB_NAME, username, password) if not register
 
     return {:username => username, :password => password}
 end
@@ -81,11 +85,11 @@ def add_db_prompt(username, password)
     # Add it
     case fdw_type
     when DB_FDW_MAPPING[:Postgres]
-        add_fdw_postgres(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport)
+        JoinDbApi.add_fdw_postgres(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport)
     when DB_FDW_MAPPING[:MySQL]
-        add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "MySQL")
+        JoinDbApi.add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "MySQL")
     when DB_FDW_MAPPING[:SQLServer]
-        add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "SQL Server")
+        JoinDbApi.add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "SQL Server")
     end
 end
 
@@ -93,11 +97,11 @@ def add_csv_prompt(username, password)
     puts "Enter the filenames or paths to the CSV file"
     puts "(multiple files separated by commas):"
     files = gets.chomp.split(",")
-    add_csv(files, username, password)
+    JoinDbApi.add_csv(files, username, password)
 end
 
 def show_details_prompt(username, password, verbose=true)
-    port = get_port()
+    port = JoinDbApi.get_port()
     puts "~~~ Server Details ~~~"
     puts "Hostname: localhost"
     puts "Port: #{port}"
@@ -107,15 +111,15 @@ def show_details_prompt(username, password, verbose=true)
     return if verbose == false
     puts "~~~ Connection Details ~~~"
     puts "Schemas:"
-    get_schemas(username, password).each{|res| puts res}
+    JoinDbApi.get_schemas(username, password).each{|res| puts res}
     puts
     puts "Foreign servers:"
-    get_foreign_servers(username, password).each{|res| puts res}
+    JoinDbApi.get_foreign_servers(username, password).each{|res| puts res}
     puts
     puts "Local tables:"
-    get_local_tables(username, password).each{|res| puts res}
+    JoinDbApi.get_local_tables(username, password).each{|res| puts res}
     puts
     puts "Foreign tables:"
-    get_foreign_tables(username, password).each{|res| puts res}
+    JoinDbApi.get_foreign_tables(username, password).each{|res| puts res}
 end
 
