@@ -23,8 +23,36 @@ RUN apt-get install -y libmysqlclient-dev
 RUN apt-get install -y wget
 RUN apt-get install -y net-tools
 
+# Download ODBC drivers
+RUN apt-get install -y unixodbc unixodbc-dev
+# SQL Server
+RUN apt-get install -y tdsodbc
+# Postgres
+RUN apt-get install odbc-postgresql
+# MySQL
+RUN mkdir /usr/lib/mysql-connector-odbc/
+RUN  wget -c https://dev.mysql.com/get/Downloads/Connector-ODBC/5.3/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar.gz
+RUN gunzip mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar.gz
+RUN tar -xf  mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit.tar -C /usr/lib/mysql-connector-odbc/
+
+# Install the drivers
+# MySQL
+RUN /usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit/bin/myodbc-installer -d -a -n "MySQL" -t "DRIVER=/usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit/lib/libmyodbc5w.so"
+# Postgres
+RUN /usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit/bin/myodbc-installer -d -a -n "PostgreSQL" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/psqlodbcw.so"
+# SQL Server
+RUN /usr/lib/mysql-connector-odbc/mysql-connector-odbc-5.3.9-linux-ubuntu17.04-x86-64bit/bin/myodbc-installer -d -a -n "SQL Server" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/libtdsodbc.so"
+
 # Note: The official Debian and Ubuntu images automatically ``apt-get clean``
 # after each ``apt-get``
+
+# Add the odbc_fdw
+RUN git clone https://github.com/CartoDB/odbc_fdw.git
+RUN cd odbc_fdw &&\
+    sed -i "s/create_foreignscan_path(root, baserel, baserel->rows/create_foreignscan_path(root, baserel, NULL, baserel->rows/g" odbc_fdw.c &&\
+    make &&\
+    make install
+RUN cd ..
 
 # Add the mysql_fdw
 RUN export PATH=/usr/lib/postgresql/9.6/bin/:$PATH
@@ -48,7 +76,7 @@ USER postgres
 RUN    /etc/init.d/postgresql start &&\
     psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
     createdb -O docker joiner &&\
-    psql -d joiner --command "CREATE EXTENSION postgres_fdw; CREATE EXTENSION mysql_fdw;"
+    psql -d joiner --command "CREATE EXTENSION odbc_fdw"
 
 # Adjust PostgreSQL configuration so that remote connections to the
 # database are possible.
