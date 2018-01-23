@@ -3,7 +3,8 @@ require 'io/console'
 
 DB_FDW_MAPPING = {
     :Postgres => "postgres_fdw",
-    :MySQL => "mysql_fdw"
+    :MySQL => "mysql_fdw",
+    :SQLServer => "sql_server_fdw"
 }
 
 # Gets the user's username and password for the Analytics DB
@@ -63,7 +64,7 @@ def add_db_prompt(username, password)
     print "Username: "
     remoteuser = gets.chomp
     print "Password: "
-    remotepass = STDIN.noecho(&:gets).chomp
+    remotepass = STDIN.noecho(&:gets).chomp || ""
     puts
     print "Host: "
     remotehost = gets.chomp
@@ -80,9 +81,11 @@ def add_db_prompt(username, password)
     # Add it
     case fdw_type
     when DB_FDW_MAPPING[:Postgres]
-        add_fdw_postgres(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport)
+        add_fdw_postgres(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport)
     when DB_FDW_MAPPING[:MySQL]
-        add_fdw_mysql(fdw_type, username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport)
+        add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "MySQL")
+    when DB_FDW_MAPPING[:SQLServer]
+        add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "SQL Server")
     end
 end
 
