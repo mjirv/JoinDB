@@ -1,11 +1,18 @@
-require_relative 'joindb_api'
+require_relative 'joindb_api_methods'
 require 'io/console'
+
+DB_NAME = "joiner"
+DB_HOST = "localhost"
 
 DB_FDW_MAPPING = {
     :Postgres => "postgres_fdw",
     :MySQL => "mysql_fdw",
     :SQLServer => "sql_server_fdw"
 }
+
+class JoinDBApi
+    extend JoindbApiMethods
+end
 
 # Gets the user's username and password for the Analytics DB
 def login_prompt(register=false)
@@ -30,7 +37,9 @@ def login_prompt(register=false)
         end
         puts "Password cannot be blank." if password == ""
     end
-    open_connection(DB_NAME, username, password) if not register
+
+    JoinDBApi.open_connection(DB_NAME, DB_HOST,
+        username, password) if not register
 
     return {:username => username, :password => password}
 end
@@ -62,30 +71,42 @@ def add_db_prompt(username, password)
     # Get DB connection details
     puts "Now enter your details for the database you want to add:"
     print "Username: "
-    remoteuser = gets.chomp
+    remote_user = gets.chomp
     print "Password: "
-    remotepass = STDIN.noecho(&:gets).chomp || ""
+    remote_pass = STDIN.noecho(&:gets).chomp || ""
     puts
     print "Host: "
-    remotehost = gets.chomp
+    remote_host = gets.chomp
     print "Port: "
-    remoteport = gets.chomp
-    if remoteport.length == 0
-        remoteport = nil
+    remote_port = gets.chomp
+    if remote_port.length == 0
+        remote_port = nil
     end
     print "DB Name: "
-    remotedbname = gets.chomp || "postgres"
+    remote_db_name = gets.chomp || "postgres"
     print "Schema: "
-    remoteschema = gets.chomp || "public"
+    remote_schema = gets.chomp || "public"
 
     # Add it
     case fdw_type
     when DB_FDW_MAPPING[:Postgres]
-        add_fdw_postgres(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteschema, remoteport)
+        JoinDBApi.add_fdw_postgres(username: username, password: password,
+            db_name: DB_NAME, db_host: DB_HOST, remote_user: remote_user, 
+            remote_pass: remote_pass, remote_host: remote_host, 
+            remote_db_name: remote_db_name, remote_schema: remote_schema, 
+            remote_port: remote_port)
     when DB_FDW_MAPPING[:MySQL]
-        add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "MySQL")
+        JoinDBApi.add_fdw_other(username: username, password: password,
+            db_name: DB_NAME, db_host: DB_HOST, remote_user: remote_user, 
+            remote_pass: remote_pass, remote_host: remote_host, 
+            remote_db_name: remote_db_name, remote_port: remote_port,
+            driver_type: "MySQL")
     when DB_FDW_MAPPING[:SQLServer]
-        add_fdw_other(username, password, remoteuser, remotepass, remotehost, remotedbname, remoteport, "SQL Server")
+        JoinDBApi.add_fdw_other(username: username, password: password,
+        db_name: DB_NAME, db_host: DB_HOST, remote_user: remote_user, 
+        remote_pass: remote_pass, remote_host: remote_host, 
+        remote_db_name: remote_db_name, remote_port: remote_port,
+        driver_type: "SQL Server")
     end
 end
 
@@ -93,29 +114,35 @@ def add_csv_prompt(username, password)
     puts "Enter the filenames or paths to the CSV file"
     puts "(multiple files separated by commas):"
     files = gets.chomp.split(",")
-    add_csv(files, username, password)
+    JoinDBApi.add_csv(files: files, username: username,
+        password: password, db_name: DB_NAME)
 end
 
 def show_details_prompt(username, password, verbose=true)
-    port = get_port()
+    port = JoinDBApi.get_port()
     puts "~~~ Server Details ~~~"
     puts "Hostname: localhost"
     puts "Port: #{port}"
-    puts "Connect via `psql -h #{DB_HOST} -U #{username} -d #{DB_NAME} -p #{port}`"
+    puts "Connect via `psql -h #{DB_HOST} -U #{username}
+        -d #{DB_NAME} -p #{port}`"
     puts
     # Exit if we just want to show the basics
     return if verbose == false
     puts "~~~ Connection Details ~~~"
     puts "Schemas:"
-    get_schemas(username, password).each{|res| puts res}
+    JoinDBApi.get_schemas(username, password, DB_NAME, DB_HOST).
+        each{ |res| puts res}
     puts
     puts "Foreign servers:"
-    get_foreign_servers(username, password).each{|res| puts res}
+    JoinDBApi.get_foreign_servers(username, password, DB_NAME, DB_HOST).
+        each{|res| puts res}
     puts
     puts "Local tables:"
-    get_local_tables(username, password).each{|res| puts res}
+    JoinDBApi.get_local_tables(username, password, DB_NAME, DB_HOST).
+        each{|res| puts res}
     puts
     puts "Foreign tables:"
-    get_foreign_tables(username, password).each{|res| puts res}
+    JoinDBApi.get_foreign_tables(username, password, DB_NAME, DB_HOST).
+        each{|res| puts res}
 end
 

@@ -1,4 +1,3 @@
-require_relative 'joindb_api'
 require_relative 'joindb_client_methods'
 require 'io/console'
 
@@ -12,7 +11,8 @@ while testconn == "error"
     login_username = login[:username]
     login_password = login[:password]
 
-    testconn = open_connection(DB_NAME, login_username, login_password) rescue "error"
+    testconn = JoinDBApi.open_connection(DB_NAME, DB_HOST, login_username,
+        login_password) #rescue "error"
 end
 
 # Main loop; continue until user wants to exit
