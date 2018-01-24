@@ -1,10 +1,13 @@
 require_relative 'joindb_client_methods'
 require 'io/console'
 
+default_login = JoinDBApi.get_default_login()
+
 puts "Welcome to Joiner!"
 puts
 puts "Connection details:"
-show_details_prompt(PG_USERNAME, PG_PASSWORD, verbose=false)
+show_details_prompt(default_login[:username], default_login[:password],
+    verbose=false)
 
 puts "Let's get you started!"
 puts "Create your login."

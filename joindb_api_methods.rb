@@ -5,6 +5,11 @@ module JoindbApiMethods
     CONTAINER_NAME = "joiner"
     FILE_DIRECTORY = "/var/lib/postgresql/file_copy"
 
+    # Return the default login info
+    def get_default_login
+        return { username: PG_USERNAME, password: PG_PASSWORD }
+    end
+
     # Adds the user who will own the database
     def add_user(username:, password:, db_host:, db_name:, db_user: PG_USERNAME,
         db_pass: PG_PASSWORD)
