@@ -11,8 +11,8 @@ while testconn == "error"
     login_username = login[:username]
     login_password = login[:password]
 
-    testconn = JoinDBApi.open_connection(DB_NAME, login_username,
-        login_password, DB_HOST) rescue "error"
+    testconn = JoinDBApi.open_connection(DB_NAME, DB_HOST, login_username,
+        login_password) #rescue "error"
 end
 
 # Main loop; continue until user wants to exit

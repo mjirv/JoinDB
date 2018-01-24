@@ -84,7 +84,7 @@ module JoindbApiMethods
             remote_pass: '', remote_host:, remote_db_name:, remote_port: 3306,
             driver_type:)
         remotehost = dockerize_localhost(remote_host)
-        conn = open_connection(db_name, username, password, db_host)
+        conn = open_connection(db_name, db_host, username, password)
         schema_name = "#{remote_db_name}"
         begin
             conn.transaction do |conn| 
@@ -150,7 +150,7 @@ module JoindbApiMethods
     end
 
     def get_schemas(username, password, db_name, db_host)
-        conn = open_connection(db_name, username, password, db_host)
+        conn = open_connection(db_name, db_host, username, password)
 
         # Show the schemas
         conn.send_query("SELECT schema_name FROM information_schema.schemata")
@@ -158,7 +158,7 @@ module JoindbApiMethods
     end
 
     def get_foreign_servers(username, password, db_name, db_host)
-        conn = open_connection(db_name, username, password, db_host)
+        conn = open_connection(db_name, db_host, username, password)
 
         # Show the servers
         conn.send_query("SELECT srvname, srvoptions FROM pg_foreign_server")
@@ -166,7 +166,7 @@ module JoindbApiMethods
     end
 
     def get_local_tables(username, password, db_name, db_host)
-        conn = open_connection(db_name, username, password, db_host)
+        conn = open_connection(db_name, db_host, username, password)
 
         # Show the tables
         conn.send_query("SELECT schemaname, tablename FROM pg_tables WHERE 
@@ -176,7 +176,7 @@ module JoindbApiMethods
     end
 
     def get_foreign_tables(username, password, db_name, db_host)
-        conn = open_connection(db_name, username, password, db_host)
+        conn = open_connection(db_name, db_host, username, password)
 
         # Show the tables
         conn.send_query("SELECT ftoptions FROM pg_foreign_table")
