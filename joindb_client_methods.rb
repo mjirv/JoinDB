@@ -38,8 +38,8 @@ def login_prompt(register=false)
         puts "Password cannot be blank." if password == ""
     end
 
-    JoinDBApi.open_connection(DB_NAME, DB_HOST, username, password) if not
-        register
+    JoinDBApi.open_connection(DB_NAME, DB_HOST,
+        username, password) if not register
 
     return {:username => username, :password => password}
 end
