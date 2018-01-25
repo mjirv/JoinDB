@@ -44,11 +44,11 @@ module JoindbApiMethods
     end
 
     # Adds a Postgres FDW
-    def add_fdw_postgres(username:, password:, db_name:, remote_user: '',
+    def add_fdw_postgres(username:, password:, db_name:, db_host:, remote_user: '',
         remote_pass: '', remote_host:, remote_db_name: 'postgres',
         remote_schema: 'public', remote_port: 5432)
         remotehost = dockerize_localhost(remote_host)
-        conn = open_connection(db_name, username, password)    
+        conn = open_connection(db_name, db_host, username, password)    
         schema_name = "#{remote_db_name}_#{remote_schema}"
         begin
             conn.transaction do |c| 
