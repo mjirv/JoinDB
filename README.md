@@ -9,9 +9,9 @@ Joiner lets you easily join across all your databases and even CSVs in minutes. 
 1. Clone the repository onto your local machine
 2. Joiner requires Ruby and Docker. You will need to download those if you don't have them already.
 #### Start the server
-3. After downloading Docker, pull the Docker image with `docker pull mjirv/joiner:prototype`
-4. Run the docker image with `docker run -P --name joiner mjirv/joiner:prototype`
-5. If you want to allow connections from other computers, note the port it's running on (using `docker ps`) and make sure it's open
+3. After downloading Docker, pull the Docker image with `docker pull mjirv/joiner:master`
+4. Run the docker image with `docker run -p 5432:5432 --name joiner mjirv/joiner:master`
+5. Make sure you open port 5432 if you want other computers to be able to connect to your JoinDB
 #### Connect to it
 6. Run `ruby install.rb` to create your login and see connection details
 7. Run `ruby joindb_client.rb` and follow the prompts on the screen to set up your analytics database and add connections to it
