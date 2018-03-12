@@ -1,5 +1,5 @@
 # JoinDB
-Spin up a data warehouse in under 5 minutes! Joiner lets you easily join across all your databases and even CSVs in minutes. No complex ETLs or integration projects required.
+Spin up a data warehouse in under 5 minutes! JoinDB lets you easily join across all your databases and even CSVs in minutes. No complex ETLs or integration projects required.
 
 _For [Joiner](getjoiner.com), a hosted Data Warehouse based on JoinDB, check out www.getjoiner.com._
 
@@ -19,4 +19,4 @@ _For [Joiner](getjoiner.com), a hosted Data Warehouse based on JoinDB, check out
 
 ### Notes
 - Joiner currently only supports PostgreSQL and MySQL connections plus CSV imports. I'm adding more soon!
-- Best practice is to connect to your other DBs using a read-only user so that your Joiner can't change your production DBs
+- Best practice is to connect to your other DBs using a read-only user so that your JoinDB can't change your production DBs
