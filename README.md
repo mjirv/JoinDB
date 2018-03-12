@@ -1,7 +1,7 @@
 # JoinDB
 Spin up a data warehouse in under 5 minutes! Joiner lets you easily join across all your databases and even CSVs in minutes. No complex ETLs or integration projects required.
 
-_For the hosted, web-app version of JoinDB, check out www.getjoiner.com._
+_For ![Joiner](getjoiner.com), a hosted Data Warehouse based on JoinDB, check out www.getjoiner.com._
 
 ![Screenshot of command line client](https://i.imgur.com/HyaJ6VG.png)
 
