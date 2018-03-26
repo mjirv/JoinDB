@@ -67,23 +67,24 @@ RUN    wget -O pgfutter https://github.com/lukasmartinelli/pgfutter/releases/dow
     chmod +x pgfutter
 
 # Add the MongoDB fdw
-RUN apt-get install -y pkg-config git-core automake autoconf libtool gcc unzip make
+RUN apt-get install -y pkg-config git-core automake autoconf libtool gcc unzip make libbson-dev libmongoc-dev
 #RUN mkdir temp && cd temp && git clone https://github.com/mongodb/libbson.git
 #RUN cd temp/libbson && ./autogen.sh
 #RUN cd temp/libbson && make && make install
 #RUN cd temp && git clone https://github.com/mongodb/mongo-c-driver.git
 #RUN cd temp/mongo-c-driver && ./autogen.sh
 #RUN cd temp/mongo-c-driver && automake && ./configure --with-libbson=system
-RUN export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+#RUN export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 #RUN cd temp/mongo-c-driver && make clean && make && make install
 RUN git clone --recursive https://github.com/EnterpriseDB/mongo_fdw.git
-#RUN export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
-RUN cd mongo_fdw &&\
-    sed -i "s/.\/configure/.\/configure --enable-shared/g" autogen.sh
-RUN cd mongo_fdw &&\
-    sed -i "s/.\/configure --enable-shared --with-libbson=auto/.\/configure --with-libbson=auto/g" autogen.sh
-RUN cd mongo_fdw && ./autogen.sh --with-legacy
-RUN cd mongo_fdw && sed -i "s/-D_POSIX_SOURCE/-D_POSIX_C_SOURCE=200112L/g" Makefile */Makefile
+#RUN cd mongo_fdw &&\
+#    sed -i "s/.\/configure/.\/configure --enable-shared/g" autogen.sh
+#RUN cd mongo_fdw &&\
+#    sed -i "s/.\/configure --enable-shared --with-libbson=auto/.\/configure --enable-ssl --with-libbson=auto/g" autogen.sh
+RUN cd mongo_fdw && ./autogen.sh --with-master
+#RUN cd mongo_fdw && sed -i "s/-D_POSIX_SOURCE/-D_POSIX_C_SOURCE=200112L/g" Makefile */Makefile
+RUN pkg-config --modversion libbson-1.0
+RUN pkg-config --modversion libmongoc-1.0
 RUN cd mongo_fdw && make clean && make
 RUN cd mongo_fdw && make install
 
